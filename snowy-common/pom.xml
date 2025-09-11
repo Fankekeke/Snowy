@@ -135,5 +135,11 @@
             <groupId>com.github.wnameless.json</groupId>
             <artifactId>json-flattener</artifactId>
         </dependency>
+
+        <!-- freemarker -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-freemarker</artifactId>
+        </dependency>
     </dependencies>
 </project>
