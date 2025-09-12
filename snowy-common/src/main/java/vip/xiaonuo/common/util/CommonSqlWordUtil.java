@@ -1,6 +1,7 @@
 package vip.xiaonuo.common.util;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.druid.sql.SQLUtils;
@@ -12,13 +13,12 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import vip.xiaonuo.common.exception.CommonException;
 import vip.xiaonuo.common.pojo.CommonSqlWordEntity;
+import vip.xiaonuo.common.pojo.CommonSqlWordParamEntity;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * SQL转三线图工具类
@@ -131,20 +131,30 @@ public class CommonSqlWordUtil {
         }
     }
 
-    public static void createWord(List<CommonSqlWordEntity> tableFieldList, String templateName, String fileName) {
-        Configuration configuration = new Configuration(Configuration.VERSION_2_3_31)
+    /**
+     * 生成数据库表-word
+     *
+     * @param tableFieldList 字段列表
+     * @param param          导出参数
+     */
+    public static void createWord(List<CommonSqlWordEntity> tableFieldList, CommonSqlWordParamEntity param) {
+        if (CollectionUtil.isEmpty(tableFieldList)) {
+            throw new CommonException("请联系管理员，无字段可生成！");
+        }
+        Map<String, List<CommonSqlWordEntity>> dataMap = tableFieldList.stream().collect(Collectors.groupingBy(CommonSqlWordEntity::getTableName));
+        Configuration configuration = new Configuration(Configuration.VERSION_2_3_31);
         configuration.setDefaultEncoding("UTF-8");
         // 模板文件所在路径
         configuration.setClassForTemplateLoading(this.getClass(), "/templates");
         Template t = null;
         try {
             // 获取模板文件
-            t = configuration.getTemplate(templateName, "UTF-8");
+            t = configuration.getTemplate("line.xml", "UTF-8");
         } catch (IOException e) {
             e.printStackTrace();
         }
         // 导出文件
-        File outFile = new File(fileName);
+        File outFile = new File(DateUtil.formatDateTime(new Date()) + "测试模板");
         try (Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8))) {
             if (t != null) {
                 // 将填充数据填入模板文件并输出到目标文件
