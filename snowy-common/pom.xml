@@ -136,10 +136,11 @@
             <artifactId>json-flattener</artifactId>
         </dependency>
 
-        <!-- freemarker -->
+        <!--easypoi依赖，excel导入导出-->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-freemarker</artifactId>
-        </dependency>
+        <groupId>cn.afterturn</groupId>
+        <artifactId>easypoi-spring-boot-starter</artifactId>
+        <version>4.2.0</version>
+    </dependency>
     </dependencies>
 </project>

@@ -1,21 +1,26 @@
 package vip.xiaonuo.common.util;
 
+import cn.afterturn.easypoi.word.WordExportUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.ast.statement.*;
 import com.alibaba.druid.util.JdbcConstants;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import vip.xiaonuo.common.exception.CommonException;
 import vip.xiaonuo.common.pojo.CommonSqlWordEntity;
 import vip.xiaonuo.common.pojo.CommonSqlWordParamEntity;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,6 +31,7 @@ import java.util.stream.Collectors;
  * @author FanK
  * @date 2025/9/11 16:28
  **/
+@Slf4j
 public class CommonSqlWordUtil {
 
     public static void main(String[] args) {
@@ -136,32 +142,35 @@ public class CommonSqlWordUtil {
      *
      * @param tableFieldList 字段列表
      * @param param          导出参数
+     * @param response       响应
      */
-    public static void createWord(List<CommonSqlWordEntity> tableFieldList, CommonSqlWordParamEntity param) {
+    public static void createWord(List<CommonSqlWordEntity> tableFieldList, CommonSqlWordParamEntity param, HttpServletResponse response) throws Exception {
         if (CollectionUtil.isEmpty(tableFieldList)) {
             throw new CommonException("请联系管理员，无字段可生成！");
         }
-        Map<String, List<CommonSqlWordEntity>> dataMap = tableFieldList.stream().collect(Collectors.groupingBy(CommonSqlWordEntity::getTableName));
-        Configuration configuration = new Configuration(Configuration.VERSION_2_3_31);
-        configuration.setDefaultEncoding("UTF-8");
-        // 模板文件所在路径
-        configuration.setClassForTemplateLoading(this.getClass(), "/templates");
-        Template t = null;
-        try {
-            // 获取模板文件
-            t = configuration.getTemplate("line.xml", "UTF-8");
-        } catch (IOException e) {
-            e.printStackTrace();
+        Map<String, List<CommonSqlWordEntity>> tableFieldMap = tableFieldList.stream().collect(Collectors.groupingBy(CommonSqlWordEntity::getTableName));
+        List<Map<String, Object>> dataMap = new ArrayList<>();
+        for (Map.Entry<String, List<CommonSqlWordEntity>> entry : tableFieldMap.entrySet()) {
+            dataMap.add(new HashMap<>() {
+                {
+                    put("tableName", entry.getKey());
+                    put("tableComment", entry.getValue().get(0).getTableComment());
+                    put("tableFieldList", entry.getValue());
+                }
+            });
         }
-        // 导出文件
-        File outFile = new File(DateUtil.formatDateTime(new Date()) + "测试模板");
-        try (Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8))) {
-            if (t != null) {
-                // 将填充数据填入模板文件并输出到目标文件
-                t.process(dataMap, out);
-            }
-        } catch (IOException | TemplateException e1) {
-            e1.printStackTrace();
+        //导出word并指定word导出模板
+        try (XWPFDocument doc = WordExportUtil.exportWord07("classpath:template/3l.docx", dataMap)) {
+            //设置编码格式
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            //设置内容类型
+            response.setContentType("application/octet-stream");
+            //设置头及文件命名。
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode("悲伤橘子-" + DateUtil.formatDateTime(new Date()) + "表.docx", StandardCharsets.UTF_8));
+            //写入
+            doc.write(response.getOutputStream());
+        } catch (Exception e) {
+            log.error(">>> 导出用户信息异常：", e);
         }
     }
 
