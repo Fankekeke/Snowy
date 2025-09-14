@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLStatement;
@@ -160,13 +161,16 @@ public class CommonSqlWordUtil {
             });
         }
         //导出word并指定word导出模板
-        try (XWPFDocument doc = WordExportUtil.exportWord07("classpath:template/3l.docx", dataMap)) {
+        try (XWPFDocument doc = WordExportUtil.exportWord07("word/3l.docx", dataMap)) {
             //设置编码格式
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             //设置内容类型
             response.setContentType("application/octet-stream");
             //设置头及文件命名。
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode("悲伤橘子-" + DateUtil.formatDateTime(new Date()) + "表.docx", StandardCharsets.UTF_8));
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+            response.setContentType("application/octet-stream;charset=UTF-8");
             //写入
             doc.write(response.getOutputStream());
         } catch (Exception e) {
