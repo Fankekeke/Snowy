@@ -90,7 +90,7 @@ public class CommonSqlWordUtil {
                 if (sqlStatement instanceof SQLCreateTableStatement createTableStmt) {
                     // 获取表名
                     String tableName = createTableStmt.getTableName();
-                    String tableComment = createTableStmt.getComment() != null ? createTableStmt.getComment().toString() : "";
+                    String tableComment = createTableStmt.getComment() != null ? createTableStmt.getComment().toString().replace("'", "") : "";
                     System.out.println("表名: " + tableName + ", 注释: " + tableComment);
                     List<SQLColumnDefinition> columnDefinitions = createTableStmt.getColumnDefinitions();
                     // 获取主键列名列表
@@ -106,11 +106,11 @@ public class CommonSqlWordUtil {
                     int index = 1;
                     for (SQLColumnDefinition column : columnDefinitions) {
                         index++;
-                        String name = column.getName().toString();
+                        String name = column.getName().toString().replace("`", "");
                         String dataType = column.getDataType().getName();
                         String length = "";
                         if (column.getDataType().getArguments() != null && !column.getDataType().getArguments().isEmpty()) {
-                            length = column.getDataType().getArguments().toString();
+                            length = column.getDataType().getArguments().toString().replace("[", "").replace("]", "");
                         }
                         boolean isPrimaryKey = primaryKeyColumns.contains(name);
                         String comment = column.getComment() != null ? column.getComment().toString() : "";
@@ -124,7 +124,7 @@ public class CommonSqlWordUtil {
                         fieldEntity.setName(name);
                         fieldEntity.setType(dataType);
                         fieldEntity.setLength(length);
-                        fieldEntity.setPrimaryKey(isPrimaryKey ? "是" : "否");
+                        fieldEntity.setPrimaryKey(isPrimaryKey ? "是" : "");
                         fieldEntity.setRemark(comment);
                         fieldEntity.setTableName(tableName);
                         fieldEntity.setTableComment(tableComment);
@@ -150,18 +150,35 @@ public class CommonSqlWordUtil {
             throw new CommonException("请联系管理员，无字段可生成！");
         }
         Map<String, List<CommonSqlWordEntity>> tableFieldMap = tableFieldList.stream().collect(Collectors.groupingBy(CommonSqlWordEntity::getTableName));
-        List<Map<String, Object>> dataMap = new ArrayList<>();
+        List<Map<String, Object>> tableList = new ArrayList<>();
+        List<Map<String, Object>> tableCommentList = new ArrayList<>();
+        int index = 0;
         for (Map.Entry<String, List<CommonSqlWordEntity>> entry : tableFieldMap.entrySet()) {
-            dataMap.add(new HashMap<>() {
+            index++;
+            int finalIndex = index;
+            tableList.add(new HashMap<>() {
                 {
+                    put("tableIndex", finalIndex);
                     put("tableName", entry.getKey());
                     put("tableComment", entry.getValue().get(0).getTableComment());
                     put("tableFieldList", entry.getValue());
                 }
             });
+            tableCommentList.add(new HashMap<>() {
+                {
+                    put("tableIndex", finalIndex);
+                    put("tableName", entry.getKey());
+                    put("tableComment", entry.getValue().get(0).getTableComment());
+                }
+            });
         }
         //导出word并指定word导出模板
-        try (XWPFDocument doc = WordExportUtil.exportWord07("word/3l.docx", dataMap)) {
+        try (XWPFDocument doc = WordExportUtil.exportWord07("word/3l.docx", new HashMap<>() {
+            {
+                put("tableList", tableList);
+                put("tableCommentList", tableCommentList);
+            }
+        })) {
             //设置编码格式
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             //设置内容类型
