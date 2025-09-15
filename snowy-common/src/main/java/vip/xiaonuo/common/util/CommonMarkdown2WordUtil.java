@@ -43,8 +43,7 @@ public class CommonMarkdown2WordUtil {
         Parser parser = Parser.builder().build();
         Node document = parser.parse(markdownContent);
         HtmlRenderer renderer = HtmlRenderer.builder().build();
-        String htmlContent = renderer.render(document);
-        return htmlContent;
+        return renderer.render(document);
     }
 
 
@@ -58,10 +57,10 @@ public class CommonMarkdown2WordUtil {
         MarkdownRenderData code = new MarkdownRenderData();
         code.setMarkdown(markdownContent);
         MarkdownStyle style = MarkdownStyle.newStyle();
-        style = setMarkdownStyle(style);
+        setMarkdownStyle(style);
         code.setStyle(style);
         // markdown样式处理与word模板中的标签{{md}}绑定
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = new HashMap<>(16);
         data.put("md", code);
 
         Configure config = Configure.builder().bind("md", new MarkdownRenderPolicy()).build();
@@ -93,11 +92,11 @@ public class CommonMarkdown2WordUtil {
         MarkdownRenderData code = new MarkdownRenderData();
         code.setMarkdown(markdownContent);
         MarkdownStyle style = MarkdownStyle.newStyle();
-        style = setMarkdownStyle(style);
+        setMarkdownStyle(style);
 
         code.setStyle(style);
         // markdown样式处理与word模板中的标签{{md}}绑定
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = new HashMap<>(16);
         data.put("md", code);
         Configure configure = Configure.builder().bind("md", new MarkdownRenderPolicy()).build();
 
@@ -108,6 +107,9 @@ public class CommonMarkdown2WordUtil {
             InputStream resourceAsStream = resource.getInputStream();
             response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8) + ".docx");
             response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8");
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+            response.setContentType("application/octet-stream;charset=UTF-8");
             XWPFTemplate template = XWPFTemplate.compile(resourceAsStream, configure)
                     .render(data);
             template.writeAndClose(response.getOutputStream());
