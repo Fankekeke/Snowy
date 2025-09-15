@@ -156,14 +156,6 @@ public class CommonSqlWordUtil {
         for (Map.Entry<String, List<CommonSqlWordEntity>> entry : tableFieldMap.entrySet()) {
             index++;
             int finalIndex = index;
-            tableList.add(new HashMap<>() {
-                {
-                    put("tableIndex", finalIndex);
-                    put("tableName", entry.getKey());
-                    put("tableComment", entry.getValue().get(0).getTableComment());
-                    put("tableFieldList", entry.getValue());
-                }
-            });
             tableCommentList.add(new HashMap<>() {
                 {
                     put("tableIndex", finalIndex);
@@ -171,14 +163,18 @@ public class CommonSqlWordUtil {
                     put("tableComment", entry.getValue().get(0).getTableComment());
                 }
             });
+            tableList.add(new HashMap<>() {
+                {
+                    put("tableIndex", finalIndex);
+                    put("tableName", entry.getKey());
+                    put("tableComment", entry.getValue().get(0).getTableComment());
+                    put("tableFieldList", entry.getValue());
+                    put("tableCommentList", tableCommentList);
+                }
+            });
         }
         //导出word并指定word导出模板
-        try (XWPFDocument doc = WordExportUtil.exportWord07("word/3l.docx", new HashMap<>() {
-            {
-                put("tableList", tableList);
-                put("tableCommentList", tableCommentList);
-            }
-        })) {
+        try (XWPFDocument doc = WordExportUtil.exportWord07("word/ot_fix.docx", tableList)) {
             //设置编码格式
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             //设置内容类型
