@@ -70,9 +70,12 @@ public class AgentController {
     }
 
     public static void main(String[] args) {
-        DashScopeAgent agent = new DashScopeAgent(new DashScopeAgentApi(""));
-        ChatResponse response = agent.call(new Prompt("“请为我的项目生成用户支付宝在线支付功能的测试文档。这个功能的用户角色有普通用户。\n" +
-                "提供的文档应包含以下信息：测试用例ID、测试描述、前置条件、测试步骤、预期结果和通过/失败状态。请使用表格格式，并用中文。”", DashScopeAgentOptions.builder().withAppId("").build()));
+        DashScopeAgent agent = new DashScopeAgent(new DashScopeAgentApi("sk-"));
+//        ChatResponse response = agent.call(new Prompt("“请为我的项目生成用户支付宝在线支付功能的测试文档。这个功能的用户角色有普通用户。\n" +
+//                "提供的文档应包含以下信息：测试用例ID、测试描述、前置条件、测试步骤、预期结果和通过/失败状态。请使用表格格式，并用中文。”", DashScopeAgentOptions.builder().withAppId("").build()));
+
+        ChatResponse response = agent.call(new Prompt("“请为我的项目生成用户登录功能的用例说明文档。这个功能的用户角色有普通用户和管理员。\n" +
+                "提供的文档应包含以下信息：用例名称、角色、用例说明、前置条件、后置条件、基本事件流、扩展流程、异常事件流、其他。请使用表格格式，纵向排列，并用中文。”", DashScopeAgentOptions.builder().withAppId("").build()));
         if (response == null || response.getResult() == null) {
             log.error("chat response is null");
         }
@@ -85,7 +88,7 @@ public class AgentController {
         List<DashScopeAgentApi.DashScopeAgentResponse.DashScopeAgentResponseOutput.DashScopeAgentResponseOutputThoughts> thoughts = output.thoughts();
 
         log.info("content:\n{}\n\n", content);
-        CommonMarkdown2WordUtil.toDoc(content.replace("<br>", "  "), "橘子.docx");
+        CommonMarkdown2WordUtil.toDoc(content.replace("<br>", "  "), "橘子");
 
         if (docReferences != null && !docReferences.isEmpty()) {
             for (DashScopeAgentApi.DashScopeAgentResponse.DashScopeAgentResponseOutput.DashScopeAgentResponseOutputDocReference docReference : docReferences) {
