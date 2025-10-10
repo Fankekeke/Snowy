@@ -70,12 +70,11 @@ public class AgentController {
     }
 
     public static void main(String[] args) {
-        DashScopeAgent agent = new DashScopeAgent(new DashScopeAgentApi("sk-"));
+        DashScopeAgent agent = new DashScopeAgent(new DashScopeAgentApi("sk-fkebb4821588054a66aa1951d7f239f77c"));
 //        ChatResponse response = agent.call(new Prompt("“请为我的项目生成用户支付宝在线支付功能的测试文档。这个功能的用户角色有普通用户。\n" +
 //                "提供的文档应包含以下信息：测试用例ID、测试描述、前置条件、测试步骤、预期结果和通过/失败状态。请使用表格格式，并用中文。”", DashScopeAgentOptions.builder().withAppId("").build()));
 
-        ChatResponse response = agent.call(new Prompt("“请为我的项目生成用户登录功能的用例说明文档。这个功能的用户角色有普通用户和管理员。\n" +
-                "提供的文档应包含以下信息：用例名称、角色、用例说明、前置条件、后置条件、基本事件流、扩展流程、异常事件流、其他。请使用表格格式，纵向排列，并用中文。”", DashScopeAgentOptions.builder().withAppId("").build()));
+        ChatResponse response = agent.call(new Prompt("““请为我的项目生成用户登录功能的用例说明文档。这个功能的用户角色有普通用户和管理员。提供的文档应包含以下信息：用例名称、角色、用例说明、前置条件、后置条件、基本事件流、扩展流程、异常事件流、其他。请使用表格格式，纵向排列，每个用例分开，并用中文.”", DashScopeAgentOptions.builder().withAppId("fk198231f05237428c8087fa9242edd14d").build()));
         if (response == null || response.getResult() == null) {
             log.error("chat response is null");
         }
